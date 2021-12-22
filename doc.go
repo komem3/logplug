@@ -1,6 +1,6 @@
 /*
 Package logplug implements a plug of standard logging package.
-This package enables json output or level logging to standard logger.
+This package enables json output, level logging and so on to standard logger.
 
 Plug implements io.Writer.
 Therefore, Plug can be specified as the output destination of log.

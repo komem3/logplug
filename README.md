@@ -1,6 +1,6 @@
 # logplug
 
-This package enables json output or level logging to standard logger.
+This package enables json output, level logging and so on to standard logger.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/komem3/logplug.svg)](https://pkg.go.dev/github.com/komem3/logplug)
 
