@@ -20,6 +20,8 @@ type LevelConfig struct {
 }
 
 // LevelHook is hook of parse level and level filter.
+// LevelHook use the string in the first [] of the Message field as the level.
+//	log.Print("[DBG] message") // level=DBG
 // If config.Default and config.Min are empty, set config.Levels[0].
 //
 // simple:

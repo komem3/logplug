@@ -18,6 +18,11 @@ log.SetOutput(logplug.NewJSONPlug(os.Stderr,
 
 log.Printf("[INFO]output test")
 // output: {"level":"INFO","message":"output test"}
+
+// key and value in [] in prefix are used as custom field
+log.SetPrefix("[label:test]")
+log.Printf("[DBG] debug log")
+// output: {"label":"test","level":"DBG","message":"debug log"}
 ```
 
 ## Options
@@ -31,4 +36,3 @@ log.Printf("[INFO]output test")
 ## License
 
 MIT
-
