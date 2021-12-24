@@ -1,5 +1,5 @@
 # Example of GCP Logger
 
-![level_log](./level_log.png)
+![logging](./logging.png)
 
-![payload](./payload.png)
+![alart](./alart.png)

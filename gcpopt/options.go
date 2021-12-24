@@ -12,6 +12,8 @@ import (
 //	log.SetFlags(gcpopt.LogFlags)
 var LogFlags = log.Llongfile
 
+const levelField = "severity"
+
 // DefaultLevelConfig is a config according to LogSeverity of gcp.
 var DefaultLevelConfig = logplug.LevelConfig{
 	Levels:  []string{"DEBUG", "INFO", "NOTICE", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"},
@@ -21,7 +23,24 @@ var DefaultLevelConfig = logplug.LevelConfig{
 		"WARN": "WARNING",
 		"ERR":  "ERROR",
 	},
-	Field: "severity",
+	Field: levelField,
+}
+
+// ErrorReportHook converts the specified levels to the format of an error report.
+//	https://cloud.google.com/error-reporting/docs/formatting-error-messages#@type
+func ErrorReportHook(levels ...logplug.Level) logplug.Hook {
+	alartLevel := make(map[logplug.Level]bool, len(levels))
+	for _, level := range levels {
+		alartLevel[level] = true
+	}
+	return func(enc logplug.Encoder) logplug.Encoder {
+		return logplug.EncoderFunc(func(p *logplug.Plug, m *logplug.MessageElement) error {
+			if _, ok := alartLevel[m.GetString(levelField)]; ok {
+				m.AddString("@type", "type.googleapis.com/google.devtools.clouderrorreporting.v1beta1.ReportedErrorEvent")
+			}
+			return enc.Encode(p, m)
+		})
+	}
 }
 
 // LocationModifyHook convert the value of location in log to sourceLocation.
@@ -63,6 +82,7 @@ func NewGCPOptions(minLevel logplug.Level) []logplug.Option {
 		logplug.LogFlag(LogFlags),
 		logplug.Hooks(
 			logplug.LevelHook(conf),
+			ErrorReportHook("ALERT", "EMERGENCY"),
 			LocationModifyHook(),
 		),
 	}

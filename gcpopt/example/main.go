@@ -32,7 +32,7 @@ func init() {
 	if metadata.OnGCE() {
 		p, err := metadata.ProjectID()
 		if err != nil {
-			log.Fatalf("[ALERT] get project: %v", err)
+			log.Fatalf("[CRITICAL] get project: %v", err)
 		}
 		projectID = p
 	}
@@ -59,7 +59,7 @@ func main() {
 	{
 		exporter, err := cloudtrace.New(cloudtrace.WithProjectID(projectID))
 		if err != nil {
-			log.Fatalf("[ALERT] new cloudtrace")
+			log.Fatalf("[CRITICAL] new cloudtrace")
 		}
 
 		tp := sdktrace.NewTracerProvider(
@@ -75,14 +75,17 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		l := NewLog(r.Context())
+
 		l.Printf("[DBG] request serve %s", r.RequestURI)
 		l.Print("default level is info")
 		l.Print("[ERR] error log")
+		l.Print("[ALERT] alart")
+
 		w.Write([]byte("hello world"))
 	})
 
 	otelHandler := otelhttp.NewHandler(mux, "Hello", otelhttp.WithPropagators(propagator.New()))
 
 	log.Printf("[DBG] listen %s", port)
-	log.Panicf("[ALERT] %v", http.ListenAndServe(":"+port, otelHandler))
+	log.Panicf("[CRITICAL] %v", http.ListenAndServe(":"+port, otelHandler))
 }
