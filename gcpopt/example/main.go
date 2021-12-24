@@ -50,7 +50,7 @@ func NewLog(ctx context.Context) *log.Logger {
 
 func main() {
 	if metadata.OnGCE() {
-		log.SetOutput(logplug.NewJSONPlug(os.Stderr, gcpopt.NewGCPOptions(nil)...))
+		log.SetOutput(logplug.NewJSONPlug(os.Stderr, gcpopt.NewGCPOptions("DEBUG")...))
 		log.SetFlags(gcpopt.LogFlags)
 	}
 

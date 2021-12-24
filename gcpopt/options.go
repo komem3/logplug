@@ -16,7 +16,6 @@ var LogFlags = log.Llongfile
 var DefaultLevelConfig = logplug.LevelConfig{
 	Levels:  []string{"DEBUG", "INFO", "NOTICE", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"},
 	Default: "INFO",
-	Min:     "DEBUG",
 	Alias: map[string]string{
 		"DBG":  "DEBUG",
 		"WARN": "WARNING",
@@ -52,20 +51,14 @@ func LocationModifyHook() logplug.Hook {
 }
 
 // NewGCPOptions provides options for gcp logging.
+// conf will modify gcpopt.DefaultLevelConfig.
 //
 // This assumes that gcpopt.logFlags has been set for log.
 //	log.SetFlags(gcpopt.LogFlags)
 //
-// conf will modify gcpopt.DefaultLevelConfig.
-//	gcpopt.NewGCPOptions(func(conf *logplug.LevelConfig) {
-//		conf.Min = "INFO"
-//	})
-// If conf is nil, it will use gcpopt.DefaultLevelConfig.
-func NewGCPOptions(modifyConfig func(conf *logplug.LevelConfig)) []logplug.Option {
+func NewGCPOptions(minLevel logplug.Level) []logplug.Option {
 	conf := DefaultLevelConfig
-	if modifyConfig != nil {
-		modifyConfig(&conf)
-	}
+	conf.Min = minLevel
 	return []logplug.Option{
 		logplug.LogFlag(LogFlags),
 		logplug.Hooks(
