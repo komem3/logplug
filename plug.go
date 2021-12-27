@@ -3,6 +3,7 @@ package logplug
 import (
 	"log"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -27,10 +28,12 @@ type MessageElement struct {
 	elements map[string]interface{}
 }
 
-func newMessageElement() *MessageElement {
-	return &MessageElement{
-		elements: make(map[string]interface{}),
-	}
+var messageElementPool = sync.Pool{
+	New: func() interface{} {
+		return &MessageElement{
+			elements: make(map[string]interface{}, 3),
+		}
+	},
 }
 
 func (m *MessageElement) GetString(key string) string {
@@ -47,7 +50,11 @@ func (m *MessageElement) Set(key string, v interface{}) {
 
 // AddString add v to key of elements.
 func (m *MessageElement) AddString(key string, v string) {
-	m.elements[key] = m.GetString(key) + v
+	if str, ok := m.elements[key].(string); ok {
+		m.elements[key] = str + v
+	} else {
+		m.elements[key] = v
+	}
 }
 
 func (m *MessageElement) GetBool(key string) bool {
@@ -97,7 +104,7 @@ func NewPlug(encoder Encoder, opts ...Option) *Plug {
 
 // Write implements io.Writer.
 func (p *Plug) Write(msgb []byte) (n int, err error) {
-	mel := newMessageElement()
+	mel := messageElementPool.Get().(*MessageElement)
 	msg := string(msgb)
 
 	// log flag process
@@ -179,6 +186,10 @@ func (p *Plug) Write(msgb []byte) (n int, err error) {
 	if err := p.encoder.Encode(p, mel); err != nil {
 		return 0, err
 	}
+	for key := range mel.elements {
+		delete(mel.elements, key)
+	}
+	messageElementPool.Put(mel)
 	return len(msgb), nil
 }
 
